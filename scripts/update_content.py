@@ -186,9 +186,35 @@ def git_push(message, dry_run=False):
         sys.exit(2)
 
 
+def cloudflare_deploy(dry_run=False):
+    """调用 Direct Upload 部署脚本，把最新静态文件推到 Cloudflare Pages。"""
+    if dry_run:
+        print('[dry-run] 跳过 Cloudflare 部署')
+        return
+    deploy_py = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'deploy.py')
+    py = sys.executable
+    # 当前解释器若无 blake3，自动回退到带依赖的 D:/Python314/python.exe
+    try:
+        import blake3  # noqa: F401
+    except ImportError:
+        fallback = r'D:/Python314/python.exe'
+        if os.path.isfile(fallback):
+            py = fallback
+        else:
+            print('[error] 缺少 blake3 且找不到 D:/Python314/python.exe，无法部署', file=sys.stderr)
+            sys.exit(3)
+    try:
+        subprocess.check_call([py, deploy_py], cwd=ROOT)
+        print('[ok] Cloudflare Pages 部署完成')
+    except subprocess.CalledProcessError as e:
+        print('[error] 部署失败：{}'.format(e), file=sys.stderr)
+        sys.exit(4)
+
+
 def build_parser():
     parser = argparse.ArgumentParser(description='十里银滩生活站内容更新工具')
     parser.add_argument('--push', action='store_true', help='写入后自动 git commit/push')
+    parser.add_argument('--deploy', action='store_true', help='写入后自动部署到 Cloudflare Pages')
     parser.add_argument('--dry-run', action='store_true', help='只打印操作，不写入不推送')
     sub = parser.add_subparsers(dest='command')
 
@@ -196,6 +222,7 @@ def build_parser():
         sp.add_argument('--json', help='从 JSON 文件读取全部字段（推荐供 AI 调用）')
         # 允许全局开关写在子命令之后（定时任务/AI 常把参数放在末尾）
         sp.add_argument('--push', action='store_true', help='写入后自动 git commit/push')
+        sp.add_argument('--deploy', action='store_true', help='写入后自动部署到 Cloudflare Pages')
         sp.add_argument('--dry-run', action='store_true', help='只打印操作，不写入不推送')
 
     sp = sub.add_parser('add-post', help='新增文章')
@@ -237,8 +264,10 @@ def main():
     }
     message = handlers[args.command](data, args)
     save_content(data, dry_run=args.dry_run)
-    if args.push:
+    if getattr(args, 'push', False):
         git_push(message, dry_run=args.dry_run)
+    if getattr(args, 'deploy', False):
+        cloudflare_deploy(dry_run=args.dry_run)
 
 
 if __name__ == '__main__':
