@@ -176,7 +176,8 @@ def git_push(message, dry_run=False):
         # 没有变更时 commit 会返回非 0，这里视为正常
         result = subprocess.call(['git', 'commit', '-m', full], cwd=ROOT)
         if result == 0:
-            subprocess.check_call(['git', 'push'], cwd=ROOT)
+            # 显式指定远程与分支，不依赖 upstream 配置（定时任务环境常无 upstream）
+            subprocess.check_call(['git', 'push', 'origin', 'HEAD:main'], cwd=ROOT)
             print('[ok] 已提交并推送：' + full)
         else:
             print('[info] 无内容变更，跳过提交')
