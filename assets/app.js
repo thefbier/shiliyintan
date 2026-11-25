@@ -88,16 +88,27 @@
   }
 
   function renderBusinesses(items) {
-    el('bizGrid').innerHTML = items.map(function (b) {
+    var meta = state.bizMeta || {};
+    var intro = meta.meta ? '<div class="biz-intro"><strong>' + escapeHtml(meta.meta.title || '商家目录') +
+      '</strong><span>核查 ' + escapeHtml(meta.meta.compiledOn || '') + ' · 全部条目待现场核验</span></div>' : '';
+    var cards = items.map(function (b) {
       var tags = (b.tags || []).map(function (t) {
         return '<span class="tag">' + escapeHtml(t) + '</span>';
       }).join('');
+      var grade = b.grade ? '<span class="grade grade-' + escapeHtml(b.grade) + '" title="信源等级 ' +
+        escapeHtml(b.grade) + '">信源 ' + escapeHtml(b.grade) + '</span>' : '';
+      var hours = b.hours ? '<span>时间 ' + escapeHtml(b.hours) + '</span>' : '';
+      var phone = b.phone ? '<span>联系 ' + escapeHtml(b.phone) + '</span>' : '';
+      var source = b.source ? '<div class="biz-source">信源：' + escapeHtml(b.source) +
+        (b.verifiedOn ? ' · 核于 ' + escapeHtml(b.verifiedOn) : '') + '</div>' : '';
       return '<article class="biz"><div class="biz-head"><h3>' + escapeHtml(b.name || '') +
         '</h3><span class="area">' + escapeHtml(b.area || '') + '</span></div>' +
+        (grade ? '<div class="biz-flags">' + grade + '</div>' : '') +
         '<p>' + escapeHtml(b.desc || '') + '</p>' +
         '<div class="tags">' + tags + '</div>' +
-        '<p class="contact">联系：' + escapeHtml(b.contact || '到店咨询') + '</p></article>';
+        '<div class="biz-meta">' + hours + phone + '</div>' + source + '</article>';
     }).join('');
+    el('bizGrid').innerHTML = intro + cards;
   }
 
   function renderListings(items) {
@@ -137,12 +148,22 @@
 
   function boot() {
     initNav();
-    fetch('content.json', { cache: 'no-store' })
-      .then(function (r) {
+    Promise.all([
+      fetch('content.json', { cache: 'no-store' }).then(function (r) {
         if (!r.ok) throw new Error('HTTP ' + r.status);
         return r.json();
-      })
-      .then(function (data) {
+      }),
+      fetch('businesses.json', { cache: 'no-store' }).then(function (r) {
+        return r.ok ? r.json() : null;
+      }).catch(function () { return null; })
+    ])
+      .then(function (res) {
+        var data = res[0];
+        var biz = res[1];
+        if (biz && biz.businesses && biz.businesses.length) {
+          state.bizMeta = biz;
+          data.businesses = biz.businesses;
+        }
         state.data = data;
         renderSite(data);
       })

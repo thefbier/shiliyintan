@@ -86,6 +86,18 @@ h1,h2,h3,p{margin-top:0}
 .biz .area{font-size:12px;color:var(--accent);white-space:nowrap}
 .biz p{font-size:13px;color:var(--muted);margin-bottom:10px}
 .biz .contact{font-size:12px;color:var(--sea-700)}
+.biz-intro{grid-column:1/-1;display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px;
+  background:var(--sand-deep);border-radius:10px;padding:12px 16px;margin-bottom:2px}
+.biz-intro strong{font-size:14px;color:var(--ink)}
+.biz-intro span{font-size:11px;color:var(--muted)}
+.biz-flags{margin-bottom:8px}
+.grade{display:inline-block;font-size:10px;letter-spacing:.04em;padding:2px 8px;border-radius:999px;
+  border:1px solid var(--line);color:var(--muted)}
+.grade-A{color:#1d6b52;border-color:rgba(29,107,82,.35);background:rgba(29,107,82,.07)}
+.grade-B{color:#8a5a12;border-color:rgba(138,90,18,.3);background:rgba(138,90,18,.06)}
+.grade-C{color:#8b5e6b;border-color:rgba(139,94,107,.3);background:rgba(139,94,107,.06)}
+.biz-meta{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:var(--sea-700);margin-bottom:8px}
+.biz-source{font-size:11px;color:#8b9ba3;padding-top:8px;border-top:1px dashed var(--line)}
 
 .list-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 .listing{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:20px}
