@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var state = { data: null, activeCategory: '全部', community: null, activeExchange: 'offers' };
+  var state = { data: null, activeCategory: '全部', community: null, activeExchange: 'offers', host: null };
 
   function el(id) { return document.getElementById(id); }
 
@@ -38,6 +38,7 @@
     renderBusinesses(data.businesses || []);
     renderListings(data.listings || []);
     renderCommunity();
+    renderHost();
   }
 
   function renderFilters(posts) {
@@ -246,6 +247,72 @@
     }
   }
 
+  // ============ 开台人：立场 + 递话筒 ============
+  function hostReply(topic) {
+    var h = state.host;
+    var tpl = h && h.meta && h.meta.replyTemplate;
+    return applyTemplate(tpl, topic);
+  }
+
+  function renderHost() {
+    var h = state.host;
+    if (!h || !el('hostOpening')) return;
+    var meta = h.meta || {};
+
+    if (el('hostRoleNote')) el('hostRoleNote').textContent = meta.roleNote || '';
+    if (el('hostPrinciple')) el('hostPrinciple').textContent = '立台原则：' + (meta.principle || '');
+
+    // 开台白
+    var o = h.opening || {};
+    var oSections = (o.sections || []).map(function (s) {
+      return '<div class="host-sec"><h4>' + escapeHtml(s.h || '') + '</h4><p>' + escapeHtml(s.p || '') + '</p></div>';
+    }).join('');
+    el('hostOpening').innerHTML =
+      '<div class="host-card"><div class="host-kicker">' + escapeHtml(o.kicker || '') + '</div>' +
+      '<h3>' + escapeHtml(o.title || '') + '</h3>' +
+      '<p class="host-stand">' + escapeHtml(o.stand || '') + '</p>' +
+      '<div class="host-body">' + oSections + '</div>' +
+      '<div class="handoff"><span class="handoff-label">递话筒 ↓</span>' +
+      '<p>' + escapeHtml(o.handoff || '') + '</p>' +
+      '<button class="claim-btn host-reply" data-topic="' + escapeHtml(o.title || '开台白') + '">接这个话 →</button></div></div>';
+
+    // 本周擂台
+    el('roundGrid').innerHTML = (h.rounds || []).map(function (r) {
+      return '<article class="round-card">' +
+        '<div class="round-meta"><span>' + escapeHtml(r.kicker || '') + '</span><span>' + escapeHtml(r.week || '') + '</span></div>' +
+        '<h3>' + escapeHtml(r.question || '') + '</h3>' +
+        '<div class="round-block take"><b>我的倾向</b><p>' + escapeHtml(r.myTake || '') + '</p></div>' +
+        '<div class="round-block other"><b>反方这么说</b><p>' + escapeHtml(r.otherSide || '') + '</p></div>' +
+        '<div class="round-block why"><b>为什么问这个</b><p>' + escapeHtml(r.whyAsk || '') + '</p></div>' +
+        '<div class="handoff"><span class="handoff-label">递话筒 ↓</span>' +
+        '<p>' + escapeHtml(r.handoff || '') + '</p>' +
+        '<button class="claim-btn host-reply" data-topic="' + escapeHtml(r.question || '') + '">接这个话 →</button></div>' +
+        '<div class="round-status">' + escapeHtml(r.status || '') + '</div></article>';
+    }).join('');
+
+    // 回声墙
+    el('echoGrid').innerHTML =
+      '<p class="echo-note">' + escapeHtml(meta.echoNote || '') + '</p>' +
+      (h.echoes || []).map(function (e) {
+        return '<article class="echo-card"><p class="echo-voice">“' + escapeHtml(e.voice || '') + '”</p>' +
+          '<div class="echo-foot"><span>' + escapeHtml(e.from || '') + '</span>' +
+          '<span>回应「' + escapeHtml(e.to || '') + '」 · ' + escapeHtml(e.status || '') + '</span></div></article>';
+      }).join('');
+
+    // 站规
+    el('rulesGrid').innerHTML = (h.rules || []).map(function (r) {
+      return '<div class="rule-card"><span class="rule-n">' + escapeHtml(r.n || '') + '</span>' +
+        '<div><h4>' + escapeHtml(r.title || '') + '</h4><p>' + escapeHtml(r.body || '') + '</p>' +
+        '<span class="rule-from">' + escapeHtml(r.from || '') + '</span></div></div>';
+    }).join('');
+
+    Array.prototype.forEach.call(document.querySelectorAll('.host-reply'), function (btn) {
+      btn.addEventListener('click', function () {
+        copyText(hostReply(btn.getAttribute('data-topic')), btn, '接话文案已复制 ✓');
+      });
+    });
+  }
+
   function initNav() {
     var toggle = el('navToggle');
     var nav = el('nav');
@@ -282,12 +349,16 @@
       }).catch(function () { return null; }),
       fetch('community.json', { cache: 'no-store' }).then(function (r) {
         return r.ok ? r.json() : null;
+      }).catch(function () { return null; }),
+      fetch('host.json', { cache: 'no-store' }).then(function (r) {
+        return r.ok ? r.json() : null;
       }).catch(function () { return null; })
     ])
       .then(function (res) {
         var data = res[0];
         var biz = res[1];
         state.community = res[2];
+        state.host = res[3];
         if (biz && biz.businesses && biz.businesses.length) {
           state.bizMeta = biz;
           data.businesses = biz.businesses;
