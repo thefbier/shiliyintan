@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var state = { data: null, activeCategory: '全部' };
+  var state = { data: null, activeCategory: '全部', community: null, activeExchange: 'offers' };
 
   function el(id) { return document.getElementById(id); }
 
@@ -37,6 +37,7 @@
     renderPosts();
     renderBusinesses(data.businesses || []);
     renderListings(data.listings || []);
+    renderCommunity();
   }
 
   function renderFilters(posts) {
@@ -122,6 +123,129 @@
     }).join('');
   }
 
+  // ============ 关系交换机 / 立场专栏 / 社区活动 ============
+  function applyTemplate(tpl, name) {
+    return String(tpl || '').replace(/\{项目名称\}/g, name || '');
+  }
+
+  function copyText(text, btn, doneLabel) {
+    var original = btn ? btn.textContent : '';
+    function done() { if (btn) { btn.textContent = doneLabel || '已复制 ✓'; setTimeout(function () { btn.textContent = original; }, 2200); } }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(function () { fallback(); });
+    } else { fallback(); }
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); done(); } catch (e) { if (btn) btn.textContent = '请长按复制'; }
+      document.body.removeChild(ta);
+    }
+  }
+
+  function renderExchange() {
+    var c = state.community;
+    if (!c || !el('exchangeGrid')) return;
+    var items = state.activeExchange === 'offers' ? (c.offers || []) : (c.requests || []);
+    el('offerCount').textContent = (c.offers || []).length;
+    el('requestCount').textContent = (c.requests || []).length;
+    el('exchangeGrid').innerHTML = items.map(function (o) {
+      var isOffer = state.activeExchange === 'offers';
+      var tags = (o.tags || []).map(function (t) { return '<span class="tag">' + escapeHtml(t) + '</span>'; }).join('');
+      var mainLabel = isOffer ? '我能给' : '我需要';
+      var mainVal = isOffer ? o.give : o.need;
+      var secondLabel = isOffer ? '我想换' : '紧急度';
+      var secondVal = isOffer ? o.want : o.urgency;
+      return '<article class="ex-card"><div class="ex-head"><span class="ex-type">' +
+        escapeHtml(isOffer ? '能力' : '需求') + '</span><h3>' + escapeHtml(o.name || '') + '</h3></div>' +
+        '<div class="ex-field"><b>' + mainLabel + '</b><span>' + escapeHtml(mainVal || '') + '</span></div>' +
+        '<div class="ex-field"><b>' + secondLabel + '</b><span>' + escapeHtml(secondVal || '') + '</span></div>' +
+        '<div class="ex-field"><b>为什么</b><span>' + escapeHtml(o.why || '') + '</span></div>' +
+        '<div class="tags">' + tags + '</div>' +
+        '<div class="ex-foot"><span class="ex-status">' + escapeHtml(o.status || '') + '</span>' +
+        '<button class="claim-btn" data-name="' + escapeHtml(o.name || '') + '">认领 / 发起 →</button></div></article>';
+    }).join('');
+    Array.prototype.forEach.call(el('exchangeGrid').querySelectorAll('.claim-btn'), function (btn) {
+      btn.addEventListener('click', function () {
+        var msg = applyTemplate(c.meta.contact.template, btn.getAttribute('data-name'));
+        copyText(msg, btn, '文案已复制 ✓');
+      });
+    });
+    el('exchangeStatus').textContent = c.meta.statusNote || '';
+    el('exchangeRedline').textContent = '红线：' + (c.meta.redlines || []).join(' · ');
+  }
+
+  function renderColumns() {
+    var c = state.community;
+    if (!c || !el('columnGrid')) return;
+    state.columns = c.columns || [];
+    el('columnGrid').innerHTML = (c.columns || []).map(function (v, idx) {
+      return '<article class="col-card"><div class="col-meta"><span>' + escapeHtml(v.kicker || '') +
+        '</span><span>' + escapeHtml(v.date || '') + ' · ' + escapeHtml(v.read || '') + '</span></div>' +
+        '<h3>' + escapeHtml(v.title || '') + '</h3>' +
+        '<p class="col-stand">' + escapeHtml(v.stand || '') + '</p>' +
+        '<button class="read-btn" data-idx="' + idx + '">展开全文 ↓</button>' +
+        '<div class="col-body" id="colbody-' + idx + '">' +
+        (v.sections || []).map(function (s) { return '<h4>' + escapeHtml(s.h || '') + '</h4><p>' + escapeHtml(s.p || '') + '</p>'; }).join('') +
+        '<p class="col-cta">' + escapeHtml(v.cta || '') + '</p></div></article>';
+    }).join('');
+    Array.prototype.forEach.call(el('columnGrid').querySelectorAll('.read-btn'), function (btn) {
+      btn.addEventListener('click', function () {
+        var body = el('colbody-' + btn.getAttribute('data-idx'));
+        var open = body.classList.toggle('open');
+        btn.textContent = open ? '收起 ↑' : '展开全文 ↓';
+      });
+    });
+  }
+
+  function renderEvents() {
+    var c = state.community;
+    if (!c || !el('eventGrid')) return;
+    el('eventGrid').innerHTML = (c.events || []).map(function (e) {
+      var tags = (e.fee ? [e.fee] : []).concat([e.type || '']).map(function (t) {
+        return '<span class="tag">' + escapeHtml(t) + '</span>';
+      }).join('');
+      return '<article class="ev-card"><div class="ev-head"><span class="ev-online">' +
+        escapeHtml((e.type || '').indexOf('线上') >= 0 ? '线上' : '线下') + '</span>' +
+        '<h3>' + escapeHtml(e.name || '') + '</h3></div>' +
+        '<div class="ev-when">' + escapeHtml(e.when || '') + '</div>' +
+        '<div class="ev-where">' + escapeHtml(e.where || '') + ' · 发起：' + escapeHtml(e.host || '') + '</div>' +
+        '<p>' + escapeHtml(e.note || '') + '</p>' +
+        '<div class="tags">' + tags + '</div>' +
+        '<div class="ev-foot"><span class="ex-status">' + escapeHtml(e.status || '') + '</span>' +
+        '<button class="claim-btn" data-name="' + escapeHtml((e.name || '') + '（' + (e.when || '') + '）') + '">我要参加 / 发起 →</button></div></article>';
+    }).join('');
+    Array.prototype.forEach.call(el('eventGrid').querySelectorAll('.claim-btn'), function (btn) {
+      btn.addEventListener('click', function () {
+        var msg = applyTemplate(c.meta.contact.template, btn.getAttribute('data-name'));
+        copyText(msg, btn, '报名文案已复制 ✓');
+      });
+    });
+  }
+
+  function renderCommunity() {
+    renderExchange();
+    renderColumns();
+    renderEvents();
+    var c = state.community;
+    if (c && el('exchangeCta')) {
+      el('exchangeCta').addEventListener('click', function () {
+        copyText(c.meta.contact.template, this, '发起文案已复制 ✓');
+      });
+    }
+    var tabs = el('exchangeTabs');
+    if (tabs) {
+      Array.prototype.forEach.call(tabs.querySelectorAll('.etab'), function (btn) {
+        btn.addEventListener('click', function () {
+          state.activeExchange = btn.getAttribute('data-tab');
+          Array.prototype.forEach.call(tabs.querySelectorAll('.etab'), function (b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+          renderExchange();
+        });
+      });
+    }
+  }
+
   function initNav() {
     var toggle = el('navToggle');
     var nav = el('nav');
@@ -155,11 +279,15 @@
       }),
       fetch('businesses.json', { cache: 'no-store' }).then(function (r) {
         return r.ok ? r.json() : null;
+      }).catch(function () { return null; }),
+      fetch('community.json', { cache: 'no-store' }).then(function (r) {
+        return r.ok ? r.json() : null;
       }).catch(function () { return null; })
     ])
       .then(function (res) {
         var data = res[0];
         var biz = res[1];
+        state.community = res[2];
         if (biz && biz.businesses && biz.businesses.length) {
           state.bizMeta = biz;
           data.businesses = biz.businesses;
