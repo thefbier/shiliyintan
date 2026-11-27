@@ -39,6 +39,7 @@
     renderListings(data.listings || []);
     renderCommunity();
     renderHost();
+    renderConnect(data);
   }
 
   function renderFilters(posts) {
@@ -311,6 +312,47 @@
         copyText(hostReply(btn.getAttribute('data-topic')), btn, '接话文案已复制 ✓');
       });
     });
+  }
+
+  // ============ 投稿 / 微信群 ============
+  function renderConnect(data) {
+    var box = el('connectActions');
+    if (!box) return;
+    var contact = (data.site && data.site.contact) || {};
+    var email = contact.email || '';
+    var tpl = (state.community && state.community.meta && state.community.meta.contact.template) || '【十里银滩·投稿】{项目名称}。我的看法：{我的话}。是否愿意署名：{愿意/匿名}。';
+
+    if (el('connectEmail')) el('connectEmail').textContent = email;
+    if (el('connectPromise')) el('connectPromise').textContent = contact.promise || '';
+    if (el('groupRules')) el('groupRules').textContent = contact.groupRules || '';
+
+    // mailto 预填主题与文案模板（中文需编码）
+    var mailBtn = el('mailBtn');
+    if (mailBtn && email) {
+      var subject = '【十里银滩·投稿】接话/认领';
+      var body = tpl;
+      mailBtn.href = 'mailto:' + email + '?subject=' + encodeURIComponent(subject) +
+        '&body=' + encodeURIComponent(body);
+    }
+    var copyTpl = el('copyTplBtn');
+    if (copyTpl) copyTpl.addEventListener('click', function () {
+      copyText(tpl, copyTpl, '投稿文案已复制 ✓');
+    });
+    var copyMail = el('copyMailBtn');
+    if (copyMail && email) copyMail.addEventListener('click', function () {
+      copyText(email, copyMail, '邮箱已复制 ✓');
+    });
+
+    // 二维码缺图时降级显示占位说明
+    var img = el('qrcodeImg');
+    if (img) {
+      img.addEventListener('error', function () {
+        img.style.display = 'none';
+        var ph = document.querySelector('.qr-placeholder');
+        if (ph) ph.style.display = 'block';
+      });
+      if (img.complete && img.naturalWidth === 0) img.dispatchEvent(new Event('error'));
+    }
   }
 
   function initNav() {
