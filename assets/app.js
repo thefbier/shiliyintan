@@ -355,6 +355,17 @@
     }
   }
 
+  // ============ 常见问题 FAQ ============
+  function renderFaq(faq) {
+    if (!faq || !el('faqList')) return;
+    el('faqList').innerHTML = (faq.faqs || []).map(function (f) {
+      return '<details class="faq-item"><summary><span class="faq-q">' + escapeHtml(f.q || '') +
+        '</span></summary><div class="faq-body"><p>' + escapeHtml(f.a || '') + '</p>' +
+        '<p class="faq-src">信源：' + escapeHtml(f.source || '') +
+        (f.checkedOn ? ' · 核于 ' + escapeHtml(f.checkedOn) : '') + '</p></div></details>';
+    }).join('');
+  }
+
   function initNav() {
     var toggle = el('navToggle');
     var nav = el('nav');
@@ -394,6 +405,9 @@
       }).catch(function () { return null; }),
       fetch('host.json', { cache: 'no-store' }).then(function (r) {
         return r.ok ? r.json() : null;
+      }).catch(function () { return null; }),
+      fetch('faq.json', { cache: 'no-store' }).then(function (r) {
+        return r.ok ? r.json() : null;
       }).catch(function () { return null; })
     ])
       .then(function (res) {
@@ -401,6 +415,7 @@
         var biz = res[1];
         state.community = res[2];
         state.host = res[3];
+        renderFaq(res[4]);
         if (biz && biz.businesses && biz.businesses.length) {
           state.bizMeta = biz;
           data.businesses = biz.businesses;
