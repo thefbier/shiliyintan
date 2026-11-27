@@ -15,6 +15,9 @@
       <span class="brand-text"><strong id="siteName">十里银滩生活站</strong><small id="siteDomain">shiliyintan.cn</small></span>
     </a>
     <nav class="nav" id="nav">
+      <a href="#exchange">关系交换机</a>
+      <a href="#columns">立场专栏</a>
+      <a href="#events">社区活动</a>
       <a href="#posts">落地指南</a>
       <a href="#businesses">本地商家</a>
       <a href="#listings">租住信息</a>
@@ -29,8 +32,8 @@
 <main id="top">
   <section class="hero">
     <div class="wrap hero-inner">
-      <p class="hero-kicker">SUBSCRIBE · 一个持续更新的社区信息入口</p>
-      <h1 id="heroTagline">住在这里的人，把信息留在这里</h1>
+      <p class="hero-kicker">NOT JUST INFO · 一个让人与能力互相看见的社区交换机</p>
+      <h1 id="heroTagline">住在这里的人，把能力也留在这里</h1>
       <p class="hero-desc" id="siteDescription"></p>
       <div class="quick-links" id="quickLinks"></div>
       <p class="hero-updated">最近更新 <span id="siteUpdated"></span></p>
@@ -39,6 +42,54 @@
 
   <section class="strip" id="statStrip">
     <div class="wrap stats" id="stats"></div>
+  </section>
+
+  <section class="section section-feature" id="exchange">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="section-kicker">EXCHANGE · 关系交换机</p>
+          <h2>每个人都是有能力的人</h2>
+        </div>
+        <p class="section-intro">这里不发广告，只登记「我能给什么」和「我需要什么」。下方为机制样本，需本人认领后成为真实条目。</p>
+      </div>
+      <div class="exchange-tabs" id="exchangeTabs">
+        <button class="etab active" data-tab="offers">我能给 · <span id="offerCount">0</span></button>
+        <button class="etab" data-tab="requests">我需要 · <span id="requestCount">0</span></button>
+      </div>
+      <div class="exchange-grid" id="exchangeGrid"></div>
+      <div class="exchange-bar">
+        <p id="exchangeStatus"></p>
+        <button class="cta-btn" id="exchangeCta">我要发起 / 认领 →</button>
+      </div>
+      <p class="exchange-redline" id="exchangeRedline"></p>
+    </div>
+  </section>
+
+  <section class="section section-alt" id="columns">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="section-kicker">STANDPOINT · 立场专栏</p>
+          <h2>有判断，不只是有信息</h2>
+        </div>
+        <p class="section-intro">信息站告诉你「是什么」，专栏告诉你「我怎么看」。观点明确，允许不同意。</p>
+      </div>
+      <div class="column-grid" id="columnGrid"></div>
+    </div>
+  </section>
+
+  <section class="section" id="events">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="section-kicker">EVENTS · 社区活动</p>
+          <h2>让「今天有人等我」发生</h2>
+        </div>
+        <p class="section-intro">线下与线上并列。周期性活动优先于一次性活动——重复，才会形成关系。</p>
+      </div>
+      <div class="event-grid" id="eventGrid"></div>
+    </div>
   </section>
 
   <section class="section" id="posts">
