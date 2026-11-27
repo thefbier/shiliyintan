@@ -2,49 +2,45 @@
   "site": {
     "name": "十里银滩生活站",
     "domain": "shiliyintan.cn",
-    "tagline": "住在这里的人，把信息留在这里",
-    "description": "给住在这里和想来长住的人：租房避坑、真实生活成本、楼巴交通、就医教育、本地商家。信息可搜索、可核验、可持续更新。",
-    "updated": "2026-11-25",
+    "tagline": "住在这里的人，把能力也留在这里",
+    "description": "不只是一个信息站。这里登记谁能给什么、谁需要什么，让能力与需求发生交换；另有立场专栏、社区活动与落地指南。",
+    "updated": "2026-11-27",
     "notice": "本站为个人非经营性信息站，部分内容为示例数据，仅作结构演示；涉及价格、时刻等信息请以官方当日口径为准。"
   },
   "quickLinks": [
     {
-      "label": "租房避坑",
-      "href": "#posts",
-      "icon": "home"
+      "label": "关系交换机",
+      "href": "#exchange"
     },
     {
-      "label": "真实生活成本",
-      "href": "#posts",
-      "icon": "wallet"
+      "label": "立场专栏",
+      "href": "#columns"
     },
     {
-      "label": "楼巴与交通",
-      "href": "#posts",
-      "icon": "bus"
+      "label": "社区活动",
+      "href": "#events"
     },
     {
-      "label": "本地商家",
-      "href": "#businesses",
-      "icon": "shop"
+      "label": "落地指南",
+      "href": "#posts"
     }
   ],
   "stats": [
     {
-      "value": "6 万户",
-      "label": "社区业主规模（项目口径）"
+      "value": "10",
+      "label": "可交换的能力与需求"
     },
     {
-      "value": "1.2 万+",
-      "label": "定居港人（2026-08 官方报道）"
+      "value": "5",
+      "label": "线上线下活动"
     },
     {
-      "value": "25 元",
-      "label": "楼巴往返深圳票价"
+      "value": "6万户",
+      "label": "社区业主规模（口径待核）"
     },
     {
-      "value": "300 人",
-      "label": "港人单车队微信群（2026-08 报道）"
+      "value": "300人",
+      "label": "港人单车队（2026-08报道）"
     }
   ],
   "posts": [
